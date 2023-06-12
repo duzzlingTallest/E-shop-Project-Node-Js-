@@ -1,4 +1,6 @@
 const router = require("express").Router(); // ?
+const auth = require("../middleware/auth")
+
 
 router.get("/", (req, res) => {
   res.render("index");
@@ -16,8 +18,9 @@ router.get("/contact", (req, res) => {
   res.render("contact");
 });
 
-router.get("/cart", (req, res) => {
-  res.render("cart");
+router.get("/cart",auth,(req, res) => {
+  const user = req.user  // this for welcome, name 
+  res.render("cart",{currentuser:user.uname});
 });
 
 router.get("/registration", (req, res) => {
@@ -27,5 +30,58 @@ router.get("/registration", (req, res) => {
 router.get("/login", (req, res) => {
   res.render("login");
 });
+
+const bodyParser = require("body-parser");
+
+// User Registration
+const User = require("../model/users");
+
+
+router.post("/do_register",async(req, res) => {
+
+  try {
+    const user = new User(req.body);
+    await user.save();
+    res.render("registration", { msg: "Registration Successfully...." });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+// User Login / token
+
+const bcrypt = require("bcryptjs")  // for compare the password 
+const jwt = require("jsonwebtoken")
+
+router.post("/do_login",async (req,res)=>{
+  
+  try {
+    
+    const user = await User.findOne({email:req.body.email})
+    console.log(user);
+    const isMatch = await bcrypt.compare(req.body.pass,user.pass)
+
+    console.log(isMatch);
+
+    if (isMatch) {
+      
+      const token = await jwt.sign({_id:user._id},process.env.S_KEY)
+      res.cookie("jwt",token)  // stored data into cookie
+      res.render("index",{currentuser:user.uname})
+
+    } else {
+      
+      res.render("login",{err:"Invalid Credantials !!!"})
+
+    }
+
+  } catch (error) {
+    res.render("login",{err:"Invalid Credantials !!!"})
+  }
+
+})
+
+
+
 
 module.exports = router;
