@@ -1,28 +1,32 @@
-const jwt = require('jsonwebtoken');
-const User = require('../model/users');
 
-const auth = async (req, resp, next) => {
-  try {
+
+const jwt = require("jsonwebtoken")
+const Admin = require("../model/admin")
+
+const auth = async(req,resp,next)=>{
+
+    try {
         
 
-    const mytoken = req.cookies.jwt
-  
-    const verifyToken = await jwt.verify(mytoken,process.env.S_KEY)
+        const mytoken = req.cookies.ajwt
+      
+        const verifyToken = await jwt.verify(mytoken,process.env.A_KEY)
 
-    if(verifyToken)
-    {
-        const userdata = await User.findOne({_id:verifyToken._id})
-        req.user = userdata
-        req.token = mytoken
-        next()
+        if(verifyToken)
+        {
+            const admindata = await Admin.findOne({_id:verifyToken._id})
+            req.admin = admindata
+            req.token = mytoken
+            next()
+        }
+
+
+    } catch (error) {
+        
+        resp.render("admin_login",{err:"Please login first !!!!"})
     }
 
 
-} catch (error) {
-    
-    resp.render("login",{err:"Please login first !!!!"})
 }
 
-
-}
-module.exports = auth;
+module.exports=auth

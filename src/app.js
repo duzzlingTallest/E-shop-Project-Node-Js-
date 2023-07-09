@@ -29,6 +29,7 @@ mongoose
 
 //path
 const publicPath = path.join(__dirname, "../public");
+
 const viewPath = path.join(__dirname, "../templates/views");
 const partialPath = path.join(__dirname, "../templates/partials");
 
@@ -38,10 +39,13 @@ app.set("views", viewPath);
 
 // partials
 hbs.registerPartials(partialPath);
-app.use(express.static(publicPath));
+app.use(express.static(publicPath));  // static consider CSS and all
 
 // require the userrouter
 app.use("/", require("../router/userrouter"));
+
+// require the adminrouter (configure)
+app.use("/",require("../router/adminrouter"))
 
 app.listen(PORT, () => {
   console.log("Server is Running on " + PORT);
